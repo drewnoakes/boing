@@ -1,22 +1,4 @@
-﻿#region License
-
-//  Copyright 2015-2021 Drew Noakes, Krzysztof Dul
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-
-#endregion
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Numerics;
 
@@ -26,7 +8,7 @@ namespace Boing
     /// A force that models a linear spring between two point masses according to Hooke's law.
     /// </summary>
     /// <remarks>
-    /// Unlike many other <see cref="IForce"/> implementations, a single <see cref="Spring"/>
+    /// Unlike many other <see cref="IForce{TVec}"/> implementations, a single <see cref="Spring3"/>
     /// instance does not apply to all point masses in the simulation. It applies to two, only.
     /// <para />
     /// The spring is defined by its two point masses, a length and a spring constant.
@@ -42,7 +24,7 @@ namespace Boing
     /// <para />
     /// See https://en.wikipedia.org/wiki/Hooke%27s_law for more information.
     /// </remarks>
-    public sealed class Spring : IForce
+    public sealed class Spring3 : IForce<Vector3>
     {
         /// <summary>
         /// Gets one of the two point masses connected by this spring.
@@ -51,7 +33,7 @@ namespace Boing
         /// The orientation of the spring has no effect. <see cref="Source"/> and <see cref="Target"/>
         /// could be swapped and the outcome would be identical.
         /// </remarks>
-        public PointMass Source { get; }
+        public PointMass3 Source { get; }
 
         /// <summary>
         /// Gets one of the two point masses connected by this spring.
@@ -60,7 +42,7 @@ namespace Boing
         /// The orientation of the spring has no effect. <see cref="Source"/> and <see cref="Target"/>
         /// could be swapped and the outcome would be identical.
         /// </remarks>
-        public PointMass Target { get; }
+        public PointMass3 Target { get; }
 
         /// <summary>
         /// Gets and sets the resting length of the spring.
@@ -73,13 +55,13 @@ namespace Boing
         public float K { get; set; }
 
         /// <summary>
-        /// Initialises a new instance of <see cref="Spring"/>.
+        /// Initialises a new instance of <see cref="Spring3"/>.
         /// </summary>
         /// <param name="source">One of the two point masses.</param>
         /// <param name="target">One of the two point masses.</param>
         /// <param name="length">The resting length of the spring. The default value is 100 units.</param>
         /// <param name="k">The string constant. The default value is 80.</param>
-        public Spring(PointMass source, PointMass target, float length = 100.0f, float k = 80.0f)
+        public Spring3(PointMass3 source, PointMass3 target, float length = 100.0f, float k = 80.0f)
         {
             Source = source;
             Target = target;
@@ -88,29 +70,31 @@ namespace Boing
         }
 
         /// <summary>
-        /// Gets a 2D line segment whose start and end points match those of
+        /// Gets a 3D line segment whose start and end points match those of
         /// the <see cref="Source"/> and <see cref="Target"/> point mass positions.
         /// </summary>
-        public LineSegment2f LineSegment => new(Source.Position, Target.Position);
+        public LineSegment3f LineSegment => new(Source.Position, Target.Position);
 
         /// <summary>
-        /// Gets the 2D axis-aligned bounding box that encloses the <see cref="Source"/> and
+        /// Gets the 3D axis-aligned bounding box that encloses the <see cref="Source"/> and
         /// <see cref="Target"/> point mass positions.
         /// </summary>
-        public Rectangle2f Bounds => new(
+        public Rectangle3f Bounds => new(
             Math.Min(Source.Position.X, Target.Position.X),
             Math.Min(Source.Position.Y, Target.Position.Y),
+            Math.Min(Source.Position.Z, Target.Position.Z),
             Math.Abs(Source.Position.X - Target.Position.X),
-            Math.Abs(Source.Position.Y - Target.Position.Y));
+            Math.Abs(Source.Position.Y - Target.Position.Y),
+            Math.Abs(Source.Position.Z - Target.Position.Z));
 
         /// <inheritdoc />
-        void IForce.ApplyTo(Simulation simulation)
+        void IForce<Vector3>.ApplyTo(Simulation<Vector3> simulation)
         {
             var source = Source;
             var target = Target;
 
             var delta = target.Position - source.Position;
-            var direction = Vector2.Normalize(delta);
+            var direction = Vector3.Normalize(delta);
             var deltaNorm = direction.Length();
             var displacement = Length - deltaNorm;
 
