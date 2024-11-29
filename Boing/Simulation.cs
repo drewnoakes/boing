@@ -30,8 +30,8 @@ namespace Boing;
 /// </summary>
 public sealed class Simulation<TVec> : IEnumerable
 {
-    private readonly HashSet<IPointMass<TVec>> _pointMasses = new();
-    private readonly HashSet<IForce<TVec>> _forces = new();
+    private readonly HashSet<IPointMass<TVec>> _pointMasses = [];
+    private readonly HashSet<IForce<TVec>> _forces = [];
 
     /// <summary>
     /// Gets the set of point masses within this simulation.
