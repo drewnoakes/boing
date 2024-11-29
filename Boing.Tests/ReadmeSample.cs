@@ -21,65 +21,64 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Boing.Tests
+namespace Boing.Tests;
+
+public static class ReadmeSample
 {
-    public static class ReadmeSample
+    public static void Code()
     {
-        public static void Code()
+        // create some point masses
+        var pointMass1 = new PointMass2(mass: 1.0f);
+        var pointMass2 = new PointMass2(mass: 2.0f);
+
+        // create a new simulation
+        var simulation = new Simulation<Vector2>
         {
-            // create some point masses
-            var pointMass1 = new PointMass2(mass: 1.0f);
-            var pointMass2 = new PointMass2(mass: 2.0f);
+            // add the point masses
+            pointMass1,
+            pointMass2,
 
-            // create a new simulation
-            var simulation = new Simulation<Vector2>
+            // create a spring between these point masses
+            new Spring2(pointMass1, pointMass2, length: 20),
+
+            // point masses are attracted to one another
+            new ColoumbForce(),
+
+            // point masses move towards the origin
+            new OriginAttractionForce(stiffness: 10),
+
+            // gravity
+            new FlowDownwardForce(magnitude: 100)
+        };
+
+        void RunAtMaxSpeed()
+        {
+            while (true)
             {
-                // add the point masses
-                pointMass1,
-                pointMass2,
+                // update the simulation
+                simulation.Update(dt: 0.01f);
 
-                // create a spring between these point masses
-                new Spring2(pointMass1, pointMass2, length: 20),
-
-                // point masses are attracted to one another
-                new ColoumbForce(),
-
-                // point masses move towards the origin
-                new OriginAttractionForce(stiffness: 10),
-
-                // gravity
-                new FlowDownwardForce(magnitude: 100)
-            };
-
-            void RunAtMaxSpeed()
-            {
-                while (true)
-                {
-                    // update the simulation
-                    simulation.Update(dt: 0.01f);
-
-                    // use the resulting positions somehow
-                    Console.WriteLine($"PointMass1 at {pointMass1.Position}, PointMass2 at {pointMass2.Position}");
-                }
+                // use the resulting positions somehow
+                Console.WriteLine($"PointMass1 at {pointMass1.Position}, PointMass2 at {pointMass2.Position}");
             }
-
-            async Task RunAtFixedRateAsync(CancellationToken token)
-            {
-                var updater = new FixedTimeStepUpdater<Vector2>(simulation, timeStepSeconds: 1f/200);
-
-                while (!token.IsCancellationRequested)
-                {
-                    updater.Update();
-
-                    // TODO render frame
-
-                    await Task.Delay(millisecondsDelay: 1/60, cancellationToken: token);
-                }
-            }
-
-            // Reference methods to remove IDE warnings
-            RunAtMaxSpeed();
-            RunAtFixedRateAsync(CancellationToken.None).Wait();
         }
+
+        async Task RunAtFixedRateAsync(CancellationToken token)
+        {
+            var updater = new FixedTimeStepUpdater<Vector2>(simulation, timeStepSeconds: 1f/200);
+
+            while (!token.IsCancellationRequested)
+            {
+                updater.Update();
+
+                // TODO render frame
+
+                await Task.Delay(millisecondsDelay: 1/60, cancellationToken: token);
+            }
+        }
+
+        // Reference methods to remove IDE warnings
+        RunAtMaxSpeed();
+        RunAtFixedRateAsync(CancellationToken.None).Wait();
     }
 }

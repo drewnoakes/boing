@@ -18,50 +18,49 @@
 
 using System.Numerics;
 
-namespace Boing
+namespace Boing;
+
+/// <summary>
+/// A force that acts upon point masses as a viscous environment would, exerting a force
+/// that inhibits movement and is proportional to point mass velocity.
+/// </summary>
+public sealed class ViscousForce : IForce<Vector2>, IForce<Vector3>
 {
     /// <summary>
-    /// A force that acts upon point masses as a viscous environment would, exerting a force
-    /// that inhibits movement and is proportional to point mass velocity.
+    /// Gets and sets the coefficient of viscosity.
     /// </summary>
-    public sealed class ViscousForce : IForce<Vector2>, IForce<Vector3>
+    public float Coefficient { get; set; }
+
+    /// <summary>
+    /// Initialises a new instance of <see cref="ViscousForce"/>.
+    /// </summary>
+    /// <param name="coefficient">The initial coefficient of viscosity.</param>
+    public ViscousForce(float coefficient)
     {
-        /// <summary>
-        /// Gets and sets the coefficient of viscosity.
-        /// </summary>
-        public float Coefficient { get; set; }
+        Coefficient = coefficient;
+    }
 
-        /// <summary>
-        /// Initialises a new instance of <see cref="ViscousForce"/>.
-        /// </summary>
-        /// <param name="coefficient">The initial coefficient of viscosity.</param>
-        public ViscousForce(float coefficient)
+    /// <inheritdoc />
+    void IForce<Vector2>.ApplyTo(Simulation<Vector2> simulation)
+    {
+        foreach (var pointMass in simulation.PointMasses)
         {
-            Coefficient = coefficient;
+            if (pointMass.IsPinned)
+                continue;
+
+            pointMass.ApplyForce(pointMass.Velocity*-Coefficient);
         }
+    }
 
-        /// <inheritdoc />
-        void IForce<Vector2>.ApplyTo(Simulation<Vector2> simulation)
+    /// <inheritdoc />
+    void IForce<Vector3>.ApplyTo(Simulation<Vector3> simulation)
+    {
+        foreach (var pointMass in simulation.PointMasses)
         {
-            foreach (var pointMass in simulation.PointMasses)
-            {
-                if (pointMass.IsPinned)
-                    continue;
+            if (pointMass.IsPinned)
+                continue;
 
-                pointMass.ApplyForce(pointMass.Velocity*-Coefficient);
-            }
-        }
-
-        /// <inheritdoc />
-        void IForce<Vector3>.ApplyTo(Simulation<Vector3> simulation)
-        {
-            foreach (var pointMass in simulation.PointMasses)
-            {
-                if (pointMass.IsPinned)
-                    continue;
-
-                pointMass.ApplyForce(pointMass.Velocity*-Coefficient);
-            }
+            pointMass.ApplyForce(pointMass.Velocity*-Coefficient);
         }
     }
 }

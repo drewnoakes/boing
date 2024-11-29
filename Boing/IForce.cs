@@ -16,26 +16,25 @@
 
 #endregion
 
-namespace Boing
-{
-    // TODO new local force: axis-align force for pairs of point masses
-    // TODO new local force: hysteresis spring force
+namespace Boing;
 
+// TODO new local force: axis-align force for pairs of point masses
+// TODO new local force: hysteresis spring force
+
+/// <summary>
+/// A force that potentially applies to every <see cref="IPointMass{TVec}"/> in the <see cref="Simulation{TVec}"/>.
+/// </summary>
+public interface IForce<TVec>
+{
     /// <summary>
-    /// A force that potentially applies to every <see cref="IPointMass{TVec}"/> in the <see cref="Simulation{TVec}"/>.
+    /// Evaluates the impact of this force on the simulation at the current point in time,
+    /// and applies forces to point masses as required.
     /// </summary>
-    public interface IForce<TVec>
-    {
-        /// <summary>
-        /// Evaluates the impact of this force on the simulation at the current point in time,
-        /// and applies forces to point masses as required.
-        /// </summary>
-        /// <remarks>
-        /// Implementations should call <see cref="IPointMass{TVec}.ApplyForce"/> on point masses.
-        /// They can update any number of point masses, or none at all. The force may be identical across
-        /// all point masses, but is more likely to vary from point to point.
-        /// </remarks>
-        /// <param name="simulation">The simulation to apply this force to.</param>
-        void ApplyTo(Simulation<TVec> simulation);
-    }
+    /// <remarks>
+    /// Implementations should call <see cref="IPointMass{TVec}.ApplyForce"/> on point masses.
+    /// They can update any number of point masses, or none at all. The force may be identical across
+    /// all point masses, but is more likely to vary from point to point.
+    /// </remarks>
+    /// <param name="simulation">The simulation to apply this force to.</param>
+    void ApplyTo(Simulation<TVec> simulation);
 }

@@ -18,39 +18,38 @@
 
 using System.Numerics;
 
-namespace Boing
+namespace Boing;
+
+/// <summary>
+/// A constant downwards force applied to all non-pinned points, akin to gravity.
+/// </summary>
+public sealed class FlowDownwardForce : IForce<Vector2>
 {
     /// <summary>
-    /// A constant downwards force applied to all non-pinned points, akin to gravity.
+    /// The magnitude of the downward force, in Newtons.
     /// </summary>
-    public sealed class FlowDownwardForce : IForce<Vector2>
+    public float Magnitude { get; set; }
+
+    /// <summary>
+    /// Initialises a new instance of <see cref="FlowDownwardForce"/>.
+    /// </summary>
+    /// <param name="magnitude">The magnitude of the downward force, in Newtons. The default value is 10.</param>
+    public FlowDownwardForce(float magnitude = 10.0f)
     {
-        /// <summary>
-        /// The magnitude of the downward force, in Newtons.
-        /// </summary>
-        public float Magnitude { get; set; }
+        Magnitude = magnitude;
+    }
 
-        /// <summary>
-        /// Initialises a new instance of <see cref="FlowDownwardForce"/>.
-        /// </summary>
-        /// <param name="magnitude">The magnitude of the downward force, in Newtons. The default value is 10.</param>
-        public FlowDownwardForce(float magnitude = 10.0f)
+    /// <inheritdoc />
+    void IForce<Vector2>.ApplyTo(Simulation<Vector2> simulation)
+    {
+        var force = new Vector2(0, Magnitude);
+
+        foreach (var pointMass in simulation.PointMasses)
         {
-            Magnitude = magnitude;
-        }
+            if (pointMass.IsPinned)
+                continue;
 
-        /// <inheritdoc />
-        void IForce<Vector2>.ApplyTo(Simulation<Vector2> simulation)
-        {
-            var force = new Vector2(0, Magnitude);
-
-            foreach (var pointMass in simulation.PointMasses)
-            {
-                if (pointMass.IsPinned)
-                    continue;
-
-                pointMass.ApplyForce(force);
-            }
+            pointMass.ApplyForce(force);
         }
     }
 }

@@ -19,73 +19,72 @@
 using System.Diagnostics;
 using System.Numerics;
 
-namespace Boing
+namespace Boing;
+
+/// <inheritdoc />
+public sealed class PointMass2 : IPointMass<Vector2>
 {
+    private Vector2 _force;
+
     /// <inheritdoc />
-    public sealed class PointMass2 : IPointMass<Vector2>
+    public float Mass { get; set; }
+
+    /// <inheritdoc />
+    public bool IsPinned { get; set; }
+
+    /// <inheritdoc />
+    public object? Tag { get; set; }
+
+    /// <inheritdoc />
+    public Vector2 Position { get; set; }
+
+    /// <inheritdoc />
+    public Vector2 Velocity { get; set; }
+
+    /// <inheritdoc />
+    public float Speed => Velocity.Length();
+
+    /// <summary>
+    /// Initialises a new instance of <see cref="PointMass2"/>.
+    /// </summary>
+    /// <param name="mass">The mass, in kilograms. Defaults to 1.</param>
+    /// <param name="position">The position, in metres. Defaults to the origin.</param>
+    public PointMass2(float mass = 1.0f, Vector2 position = default)
     {
-        private Vector2 _force;
+        Mass = mass;
+        Position = position;
+    }
 
-        /// <inheritdoc />
-        public float Mass { get; set; }
+    /// <inheritdoc />
+    public void ApplyForce(Vector2 force)
+    {
+        Debug.Assert(!float.IsNaN(force.X) && !float.IsNaN(force.Y), "!float.IsNaN(force.X) && !float.IsNaN(force.Y)");
+        Debug.Assert(!float.IsInfinity(force.X) && !float.IsInfinity(force.Y), "!float.IsInfinity(force.X) && !float.IsInfinity(force.Y)");
 
-        /// <inheritdoc />
-        public bool IsPinned { get; set; }
+        // Accumulate force
+        _force += force;
+    }
 
-        /// <inheritdoc />
-        public object? Tag { get; set; }
+    /// <inheritdoc />
+    public void ApplyImpulse(Vector2 impulse)
+    {
+        // Update velocity
+        Velocity += impulse/Mass;
+    }
 
-        /// <inheritdoc />
-        public Vector2 Position { get; set; }
+    /// <inheritdoc />
+    public void Update(float dt)
+    {
+        // Update velocity
+        Velocity += _force/Mass*dt;
 
-        /// <inheritdoc />
-        public Vector2 Velocity { get; set; }
+        // Update position
+        Position += Velocity*dt;
 
-        /// <inheritdoc />
-        public float Speed => Velocity.Length();
+        Debug.Assert(!float.IsNaN(Position.X) && !float.IsNaN(Position.Y), "!float.IsNaN(Position.X) && !float.IsNaN(Position.Y)");
+        Debug.Assert(!float.IsInfinity(Position.X) && !float.IsInfinity(Position.Y), "!float.IsInfinity(Position.X) && !float.IsInfinity(Position.Y)");
 
-        /// <summary>
-        /// Initialises a new instance of <see cref="PointMass2"/>.
-        /// </summary>
-        /// <param name="mass">The mass, in kilograms. Defaults to 1.</param>
-        /// <param name="position">The position, in metres. Defaults to the origin.</param>
-        public PointMass2(float mass = 1.0f, Vector2 position = default)
-        {
-            Mass = mass;
-            Position = position;
-        }
-
-        /// <inheritdoc />
-        public void ApplyForce(Vector2 force)
-        {
-            Debug.Assert(!float.IsNaN(force.X) && !float.IsNaN(force.Y), "!float.IsNaN(force.X) && !float.IsNaN(force.Y)");
-            Debug.Assert(!float.IsInfinity(force.X) && !float.IsInfinity(force.Y), "!float.IsInfinity(force.X) && !float.IsInfinity(force.Y)");
-
-            // Accumulate force
-            _force += force;
-        }
-
-        /// <inheritdoc />
-        public void ApplyImpulse(Vector2 impulse)
-        {
-            // Update velocity
-            Velocity += impulse/Mass;
-        }
-
-        /// <inheritdoc />
-        public void Update(float dt)
-        {
-            // Update velocity
-            Velocity += _force/Mass*dt;
-
-            // Update position
-            Position += Velocity*dt;
-
-            Debug.Assert(!float.IsNaN(Position.X) && !float.IsNaN(Position.Y), "!float.IsNaN(Position.X) && !float.IsNaN(Position.Y)");
-            Debug.Assert(!float.IsInfinity(Position.X) && !float.IsInfinity(Position.Y), "!float.IsInfinity(Position.X) && !float.IsInfinity(Position.Y)");
-
-            // Clear force
-            _force = Vector2.Zero;
-        }
+        // Clear force
+        _force = Vector2.Zero;
     }
 }

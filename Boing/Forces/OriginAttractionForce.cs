@@ -18,66 +18,65 @@
 
 using System.Numerics;
 
-namespace Boing
+namespace Boing;
+
+/// <summary>
+/// A force that attracts all non-pinned point masses towards the origin of the coordinate system.
+/// </summary>
+public sealed class OriginAttractionForce : IForce<Vector2>, IForce<Vector3>
 {
     /// <summary>
-    /// A force that attracts all non-pinned point masses towards the origin of the coordinate system.
+    /// Gets and sets the magnitude of the force.
     /// </summary>
-    public sealed class OriginAttractionForce : IForce<Vector2>, IForce<Vector3>
+    /// <remarks>
+    /// Positive values cause attraction to the origin, while negative values
+    /// cause repulsion from it. Larger values cause larger forces, and a zero
+    /// value effectively disables this force.
+    /// </remarks>
+    public float Stiffness { get; set; }
+
+    /// <summary>
+    /// Initialises a new instance of <see cref="OriginAttractionForce"/>.
+    /// </summary>
+    /// <param name="stiffness"></param>
+    public OriginAttractionForce(float stiffness = 40)
     {
-        /// <summary>
-        /// Gets and sets the magnitude of the force.
-        /// </summary>
-        /// <remarks>
-        /// Positive values cause attraction to the origin, while negative values
-        /// cause repulsion from it. Larger values cause larger forces, and a zero
-        /// value effectively disables this force.
-        /// </remarks>
-        public float Stiffness { get; set; }
+        Stiffness = stiffness;
+    }
 
-        /// <summary>
-        /// Initialises a new instance of <see cref="OriginAttractionForce"/>.
-        /// </summary>
-        /// <param name="stiffness"></param>
-        public OriginAttractionForce(float stiffness = 40)
+    /// <inheritdoc />
+    void IForce<Vector2>.ApplyTo(Simulation<Vector2> simulation)
+    {
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
+        if (Stiffness == 0)
+            return;
+
+        var f = -Stiffness;
+
+        foreach (var pointMass in simulation.PointMasses)
         {
-            Stiffness = stiffness;
+            if (pointMass.IsPinned)
+                continue;
+
+            pointMass.ApplyForce(f*pointMass.Position);
         }
+    }
 
-        /// <inheritdoc />
-        void IForce<Vector2>.ApplyTo(Simulation<Vector2> simulation)
+    /// <inheritdoc />
+    void IForce<Vector3>.ApplyTo(Simulation<Vector3> simulation)
+    {
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
+        if (Stiffness == 0)
+            return;
+
+        var f = -Stiffness;
+
+        foreach (var pointMass in simulation.PointMasses)
         {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (Stiffness == 0)
-                return;
+            if (pointMass.IsPinned)
+                continue;
 
-            var f = -Stiffness;
-
-            foreach (var pointMass in simulation.PointMasses)
-            {
-                if (pointMass.IsPinned)
-                    continue;
-
-                pointMass.ApplyForce(f*pointMass.Position);
-            }
-        }
-
-        /// <inheritdoc />
-        void IForce<Vector3>.ApplyTo(Simulation<Vector3> simulation)
-        {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (Stiffness == 0)
-                return;
-
-            var f = -Stiffness;
-
-            foreach (var pointMass in simulation.PointMasses)
-            {
-                if (pointMass.IsPinned)
-                    continue;
-
-                pointMass.ApplyForce(f*pointMass.Position);
-            }
+            pointMass.ApplyForce(f*pointMass.Position);
         }
     }
 }

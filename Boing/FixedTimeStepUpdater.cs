@@ -19,69 +19,68 @@
 using System;
 using System.Diagnostics;
 
-namespace Boing
+namespace Boing;
+
+/// <summary>
+/// Updates a simulation according to a time scale of fixed repeating interval,
+/// when compared with a stopwatch (wall time).
+/// <para />
+/// Each call to <see cref="Update"/> may update the simulation zero or more times,
+/// </summary>
+public sealed class FixedTimeStepUpdater<TVec>
 {
+    private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
+    private readonly float _timeStepSeconds;
+    private readonly long _timeStepTicks;
+    private readonly Simulation<TVec> _simulation;
+    private long _leftOverTicks;
+    private long _lastTicks;
+
     /// <summary>
-    /// Updates a simulation according to a time scale of fixed repeating interval,
-    /// when compared with a stopwatch (wall time).
-    /// <para />
-    /// Each call to <see cref="Update"/> may update the simulation zero or more times,
+    /// Initialises a <see cref="FixedTimeStepUpdater{TVec}"/>.
     /// </summary>
-    public sealed class FixedTimeStepUpdater<TVec>
+    /// <param name="simulation">The simulation to apply to.</param>
+    /// <param name="timeStepSeconds">The number of seconds to </param>
+    public FixedTimeStepUpdater(Simulation<TVec> simulation, float timeStepSeconds)
     {
-        private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
-        private readonly float _timeStepSeconds;
-        private readonly long _timeStepTicks;
-        private readonly Simulation<TVec> _simulation;
-        private long _leftOverTicks;
-        private long _lastTicks;
+        _simulation = simulation;
+        _timeStepSeconds = timeStepSeconds;
+        _timeStepTicks = TimeSpan.FromSeconds(timeStepSeconds).Ticks;
+    }
 
-        /// <summary>
-        /// Initialises a <see cref="FixedTimeStepUpdater{TVec}"/>.
-        /// </summary>
-        /// <param name="simulation">The simulation to apply to.</param>
-        /// <param name="timeStepSeconds">The number of seconds to </param>
-        public FixedTimeStepUpdater(Simulation<TVec> simulation, float timeStepSeconds)
-        {
-            _simulation = simulation;
-            _timeStepSeconds = timeStepSeconds;
-            _timeStepTicks = TimeSpan.FromSeconds(timeStepSeconds).Ticks;
-        }
+    /// <summary>
+    /// Reset the current time
+    /// </summary>
+    public void Reset()
+    {
+        _leftOverTicks = 0;
+        _lastTicks = 0;
+        // Note we can't use Stopwatch.Restart here as we target netstandard1.0
+        _stopwatch.Reset();
+        _stopwatch.Start();
+    }
 
-        /// <summary>
-        /// Reset the current time
-        /// </summary>
-        public void Reset()
-        {
-            _leftOverTicks = 0;
-            _lastTicks = 0;
-            // Note we can't use Stopwatch.Restart here as we target netstandard1.0
-            _stopwatch.Reset();
-            _stopwatch.Start();
-        }
+    /// <summary>
+    /// Updates the simulations enough times to bring it up to date.
+    /// </summary>
+    /// <remarks>
+    /// If <see cref="Update"/> was called recently enough, it may not actually
+    /// update the simulation. It may also call it very many times if it has
+    /// been a long time since it last ran.
+    /// </remarks>
+    public void Update()
+    {
+        var ticks = _stopwatch.Elapsed.Ticks;
+        var delta = ticks - _lastTicks;
+        _lastTicks = ticks;
 
-        /// <summary>
-        /// Updates the simulations enough times to bring it up to date.
-        /// </summary>
-        /// <remarks>
-        /// If <see cref="Update"/> was called recently enough, it may not actually
-        /// update the simulation. It may also call it very many times if it has
-        /// been a long time since it last ran.
-        /// </remarks>
-        public void Update()
-        {
-            var ticks = _stopwatch.Elapsed.Ticks;
-            var delta = ticks - _lastTicks;
-            _lastTicks = ticks;
+        delta += _leftOverTicks;
 
-            delta += _leftOverTicks;
+        var stepsThisUpdate = delta/_timeStepTicks;
 
-            var stepsThisUpdate = delta/_timeStepTicks;
+        _leftOverTicks = delta%_timeStepTicks;
 
-            _leftOverTicks = delta%_timeStepTicks;
-
-            for (var i = 0; i < stepsThisUpdate; i++)
-                _simulation.Update(_timeStepSeconds);
-        }
+        for (var i = 0; i < stepsThisUpdate; i++)
+            _simulation.Update(_timeStepSeconds);
     }
 }

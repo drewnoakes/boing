@@ -21,116 +21,115 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace Boing
+namespace Boing;
+
+/// <summary>
+/// Top-level object for a Boing physical simulation.
+/// Contains instances of <see cref="IPointMass{TVec}"/> and <see cref="IForce{TVec}"/>,
+/// and can update them one time step at a time.
+/// </summary>
+public sealed class Simulation<TVec> : IEnumerable
 {
+    private readonly HashSet<IPointMass<TVec>> _pointMasses = new();
+    private readonly HashSet<IForce<TVec>> _forces = new();
+
     /// <summary>
-    /// Top-level object for a Boing physical simulation.
-    /// Contains instances of <see cref="IPointMass{TVec}"/> and <see cref="IForce{TVec}"/>,
-    /// and can update them one time step at a time.
+    /// Gets the set of point masses within this simulation.
     /// </summary>
-    public sealed class Simulation<TVec> : IEnumerable
+    public IEnumerable<IPointMass<TVec>> PointMasses => _pointMasses;
+
+    /// <summary>
+    /// Gets the set of forces within this simulation.
+    /// </summary>
+    public IEnumerable<IForce<TVec>> Forces => _forces;
+
+    /// <summary>
+    /// Progresses the simulation one time step, updating the <see cref="IPointMass{TVec}.Velocity"/> and
+    /// <see cref="IPointMass{TVec}.Position"/> of all point masses within the simulation.
+    /// </summary>
+    /// <param name="dt">Elapsed time since the last update, in seconds.</param>
+    public void Update(float dt)
     {
-        private readonly HashSet<IPointMass<TVec>> _pointMasses = new();
-        private readonly HashSet<IForce<TVec>> _forces = new();
+        foreach (var force in _forces)
+            force.ApplyTo(this);
 
-        /// <summary>
-        /// Gets the set of point masses within this simulation.
-        /// </summary>
-        public IEnumerable<IPointMass<TVec>> PointMasses => _pointMasses;
+        foreach (var pointMass in _pointMasses)
+            pointMass.Update(dt);
+    }
 
-        /// <summary>
-        /// Gets the set of forces within this simulation.
-        /// </summary>
-        public IEnumerable<IForce<TVec>> Forces => _forces;
+    /// <summary>
+    /// Aggregates the kinetic energy of all point masses in the simulation, and
+    /// returns the sum.
+    /// </summary>
+    /// <remarks>
+    /// Kinetic energy is computed based on point mass velocities.
+    /// It can be useful in determining whether a simulation has come to rest,
+    /// although a moving average should be applied to prevent incorrectly taking
+    /// a transiently near-static moment to mean equilibrium is reached.
+    /// </remarks>
+    /// <returns></returns>
+    public float GetTotalKineticEnergy()
+    {
+        // Ek = 1/2 m v^2
 
-        /// <summary>
-        /// Progresses the simulation one time step, updating the <see cref="IPointMass{TVec}.Velocity"/> and
-        /// <see cref="IPointMass{TVec}.Position"/> of all point masses within the simulation.
-        /// </summary>
-        /// <param name="dt">Elapsed time since the last update, in seconds.</param>
-        public void Update(float dt)
+        float sum = 0;
+
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (var pointMass in _pointMasses)
         {
-            foreach (var force in _forces)
-                force.ApplyTo(this);
-
-            foreach (var pointMass in _pointMasses)
-                pointMass.Update(dt);
+            var speed = pointMass.Speed;
+            sum += pointMass.Mass*speed*speed;
         }
 
-        /// <summary>
-        /// Aggregates the kinetic energy of all point masses in the simulation, and
-        /// returns the sum.
-        /// </summary>
-        /// <remarks>
-        /// Kinetic energy is computed based on point mass velocities.
-        /// It can be useful in determining whether a simulation has come to rest,
-        /// although a moving average should be applied to prevent incorrectly taking
-        /// a transiently near-static moment to mean equilibrium is reached.
-        /// </remarks>
-        /// <returns></returns>
-        public float GetTotalKineticEnergy()
-        {
-            // Ek = 1/2 m v^2
+        return sum / 2;
+    }
 
-            float sum = 0;
+    /// <summary>
+    /// Removes all <see cref="IPointMass{TVec}"/> and <see cref="IForce{TVec}"/> objects from the simulation.
+    /// </summary>
+    public void Clear()
+    {
+        _pointMasses.Clear();
+        _forces.Clear();
+    }
 
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var pointMass in _pointMasses)
-            {
-                var speed = pointMass.Speed;
-                sum += pointMass.Mass*speed*speed;
-            }
+    /// <summary>
+    /// Adds <paramref name="force"/> to the simulation.
+    /// </summary>
+    /// <param name="force">The <see cref="IForce{TVec}"/> to add to the simulation.</param>
+    /// <exception cref="ArgumentException"><paramref name="force"/> already exists.</exception>
+    public void Add(IForce<TVec> force)
+    {
+        if (!_forces.Add(force))
+            throw new ArgumentException("Already exists.", nameof(force));
+    }
 
-            return sum / 2;
-        }
+    /// <summary>
+    /// Removes <paramref name="force"/> from the simulation.
+    /// </summary>
+    /// <param name="force">The <see cref="IForce{TVec}"/> to remove from the simulation.</param>
+    public bool Remove(IForce<TVec> force) => _forces.Remove(force);
 
-        /// <summary>
-        /// Removes all <see cref="IPointMass{TVec}"/> and <see cref="IForce{TVec}"/> objects from the simulation.
-        /// </summary>
-        public void Clear()
-        {
-            _pointMasses.Clear();
-            _forces.Clear();
-        }
+    /// <summary>
+    /// Adds <paramref name="pointMass"/> to the simulation.
+    /// </summary>
+    /// <param name="pointMass">The <see cref="IPointMass{TVec}"/> to add to the simulation.</param>
+    /// <exception cref="ArgumentException"><paramref name="pointMass"/> already exists.</exception>
+    public void Add(IPointMass<TVec> pointMass)
+    {
+        if (!_pointMasses.Add(pointMass))
+            throw new ArgumentException("Already exists.", nameof(pointMass));
+    }
 
-        /// <summary>
-        /// Adds <paramref name="force"/> to the simulation.
-        /// </summary>
-        /// <param name="force">The <see cref="IForce{TVec}"/> to add to the simulation.</param>
-        /// <exception cref="ArgumentException"><paramref name="force"/> already exists.</exception>
-        public void Add(IForce<TVec> force)
-        {
-            if (!_forces.Add(force))
-                throw new ArgumentException("Already exists.", nameof(force));
-        }
+    /// <summary>
+    /// Removes <paramref name="pointMass"/> from the simulation.
+    /// </summary>
+    /// <param name="pointMass">The <see cref="IPointMass{TVec}"/> to remove from the simulation.</param>
+    public bool Remove(IPointMass<TVec> pointMass) => _pointMasses.Remove(pointMass);
 
-        /// <summary>
-        /// Removes <paramref name="force"/> from the simulation.
-        /// </summary>
-        /// <param name="force">The <see cref="IForce{TVec}"/> to remove from the simulation.</param>
-        public bool Remove(IForce<TVec> force) => _forces.Remove(force);
-
-        /// <summary>
-        /// Adds <paramref name="pointMass"/> to the simulation.
-        /// </summary>
-        /// <param name="pointMass">The <see cref="IPointMass{TVec}"/> to add to the simulation.</param>
-        /// <exception cref="ArgumentException"><paramref name="pointMass"/> already exists.</exception>
-        public void Add(IPointMass<TVec> pointMass)
-        {
-            if (!_pointMasses.Add(pointMass))
-                throw new ArgumentException("Already exists.", nameof(pointMass));
-        }
-
-        /// <summary>
-        /// Removes <paramref name="pointMass"/> from the simulation.
-        /// </summary>
-        /// <param name="pointMass">The <see cref="IPointMass{TVec}"/> to remove from the simulation.</param>
-        public bool Remove(IPointMass<TVec> pointMass) => _pointMasses.Remove(pointMass);
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotSupportedException($"{nameof(Simulation<TVec>)} only implements {nameof(IEnumerable)} to enable C# object initialisers.");
-        }
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        throw new NotSupportedException($"{nameof(Simulation<TVec>)} only implements {nameof(IEnumerable)} to enable C# object initialisers.");
     }
 }
