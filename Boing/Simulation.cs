@@ -130,6 +130,6 @@ public sealed class Simulation<TVec> : IEnumerable
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator()
     {
-        throw new NotSupportedException($"{nameof(Simulation<TVec>)} only implements {nameof(IEnumerable)} to enable C# object initialisers.");
+        throw new NotSupportedException($"{nameof(Simulation<>)} only implements {nameof(IEnumerable)} to enable C# object initialisers.");
     }
 }
