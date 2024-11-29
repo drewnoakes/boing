@@ -2,9 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-    <DebugType>portable</DebugType>
-    <AssemblyName>Boing.Tests</AssemblyName>
-    <PackageId>Boing.Tests</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

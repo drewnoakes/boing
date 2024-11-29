@@ -6,6 +6,7 @@
     <Authors>Drew Noakes;Krzysztof Dul</Authors>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
+    <Description>A simple library for 2D physics simulations in .NET.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIcon>logo-square-512px.png</PackageIcon>
     <DebugType>portable</DebugType>
@@ -16,6 +17,10 @@
     <Deterministic>true</Deterministic>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <PackageProjectUrl>https://github.com/drewnoakes/boing</PackageProjectUrl>
+    <PackageTags>physics;simulation</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/drewnoakes/boing.git</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
