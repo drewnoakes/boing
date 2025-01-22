@@ -21,6 +21,7 @@
     <PackageTags>physics;simulation</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/drewnoakes/boing.git</RepositoryUrl>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
