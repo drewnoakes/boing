@@ -4,7 +4,7 @@
 [![Boing NuGet version](https://img.shields.io/nuget/v/Boing.svg)](https://www.nuget.org/packages/Boing/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A simple library for 2D physics simulations in .NET.
+A simple library for 2D and 3D physics simulations in .NET.
 
 ## Installation
 

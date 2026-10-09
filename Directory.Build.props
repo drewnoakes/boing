@@ -5,7 +5,7 @@
     <Authors>Drew Noakes;Krzysztof Dul</Authors>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
-    <Description>A simple library for 2D physics simulations in .NET.</Description>
+    <Description>A simple library for 2D and 3D physics simulations in .NET.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIcon>logo-square-512px.png</PackageIcon>
     <DebugType>portable</DebugType>
