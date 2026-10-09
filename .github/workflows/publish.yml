@@ -1,0 +1,56 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate tag version
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          project_version="$(dotnet msbuild Boing/Boing.csproj -getProperty:Version -nologo)"
+          if [[ "$tag_version" != "$project_version" ]]; then
+            echo "::error::Tag version ($tag_version) does not match project version ($project_version)."
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore Boing.slnx
+
+      - name: Build
+        run: dotnet build Boing.slnx --configuration Release --no-restore --warnaserror
+
+      - name: Test
+        run: dotnet test Boing.slnx --configuration Release --no-build --no-restore
+
+      - name: Pack
+        run: dotnet pack Boing/Boing.csproj --configuration Release --no-build --no-restore --output artifacts
+
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish package
+        run: dotnet nuget push artifacts/*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Publish symbols
+        run: dotnet nuget push artifacts/*.snupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

@@ -1,6 +1,6 @@
 ![boing logo](https://cdn.rawgit.com/drewnoakes/boing/master/Resources/logo.svg)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/xsovru9f2mmib616?svg=true)](https://ci.appveyor.com/project/drewnoakes/boing)
+[![Build status](https://github.com/drewnoakes/boing/actions/workflows/ci.yml/badge.svg)](https://github.com/drewnoakes/boing/actions/workflows/ci.yml)
 [![Boing NuGet version](https://img.shields.io/nuget/v/Boing.svg)](https://www.nuget.org/packages/Boing/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -12,7 +12,7 @@ The easiest way to use this library is via its [NuGet package](https://www.nuget
 
     PM> Install-Package Boing
 
-Boing supports `net35` (.NET Framework 3.5 and above) and `netstandard1.0` (.NET Standard 1.0 and above) for .NET Core and other platforms.
+Boing supports `net47` (.NET Framework 4.7 and above) and `netstandard2.0` (.NET Standard 2.0 and above) for .NET Core and other platforms.
 
 ## Usage
 
