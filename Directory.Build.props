@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <Copyright>Copyright Drew Noakes, Krzysztof Dul 2015-$([System.DateTime]::Now.Year)</Copyright>
-    <Version>2.0.0</Version>
     <Authors>Drew Noakes;Krzysztof Dul</Authors>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
