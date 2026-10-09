@@ -16,31 +16,32 @@ Boing supports `net47` (.NET Framework 4.7 and above) and `netstandard2.0` (.NET
 
 ## Usage
 
-Build a `Simulation` comprising:
+Create either a 2D `Simulation<Vector2>` or a 3D `Simulation<Vector3>` comprising:
 
-- `PointMass` objects
-- Forces such as springs, gravity, Coloumb, viscosity
+- `PointMass2` or `PointMass3` objects
+- Dimension-specific forces such as `Spring2`, `Spring3`, `KeepWithinBounds2Force`, and `KeepWithinBounds3Force`
+- Shared forces such as `ColoumbForce`, `FlowDownwardForce`, `OriginAttractionForce`, and `ViscousForce`
 
 Periodically update the simulation with a time step.
 
 ## Example
 
-Set up a simulation having some point masses and a few forces:
+This example creates a 2D simulation. To build a 3D simulation, use `Vector3`, `PointMass3`, and `Spring3` instead.
 
 ```csharp
 // create some point masses
-var pointMass1 = new PointMass(mass: 1.0f);
-var pointMass2 = new PointMass(mass: 2.0f);
+var pointMass1 = new PointMass2(mass: 1.0f);
+var pointMass2 = new PointMass2(mass: 2.0f);
 
 // create a new simulation
-var simulation = new Simulation
+var simulation = new Simulation<Vector2>
 {
     // add the point masses
     pointMass1,
     pointMass2,
 
     // create a spring between these point masses
-    new Spring(pointMass1, pointMass2, length: 20),
+    new Spring2(pointMass1, pointMass2, length: 20),
 
     // point masses are attracted to one another
     new ColoumbForce(),
@@ -68,7 +69,7 @@ void RunAtMaxSpeed()
         // update the simulation
         simulation.Update(dt: 0.01f);
 
-        // TODO use the resulting positions somehow
+        // use the resulting positions somehow
         Console.WriteLine($"PointMass1 at {pointMass1.Position}, PointMass2 at {pointMass2.Position}");
     }
 }
@@ -83,13 +84,13 @@ simulation at 200Hz, and render the output at 60Hz, as shown here:
 ```csharp
 async Task RunAtFixedRateAsync(CancellationToken token)
 {
-    var updater = new FixedTimeStepUpdater(simulation, timeStepSeconds: 1f/200);
+    var updater = new FixedTimeStepUpdater<Vector2>(simulation, timeStepSeconds: 1f/200);
 
     while (!token.IsCancellationRequested)
     {
         updater.Update();
 
-        Render();
+        // TODO render frame
 
         await Task.Delay(millisecondsDelay: 1/60, cancellationToken: token);
     }
