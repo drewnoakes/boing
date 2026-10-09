@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="Resources/logo-square-256px.png" />
+    <File Path="Resources/logo-square-512px.png" />
+    <File Path="Resources/logo-square.svg" />
+    <File Path="Resources/logo.svg" />
+  </Folder>
+  <Project Path="Boing.Tests/Boing.Tests.csproj" />
+  <Project Path="Boing/Boing.csproj" />
+</Solution>
