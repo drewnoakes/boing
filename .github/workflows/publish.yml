@@ -26,11 +26,12 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          if [[ "$RELEASE_TAG" != v* ]]; then
-            echo "::error::Release tag must start with 'v'."
+          version="${RELEASE_TAG#v}"
+          if [[ ! "$version" =~ ^[0-9]+(\.[0-9]+){1,3}([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Release tag '$RELEASE_TAG' is not a valid package version."
             exit 1
           fi
-          echo "value=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
 
       - name: Restore
         run: dotnet restore Boing.slnx
